@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Genre } from '@prisma/client';
 import { BookDto, FilterBooksDto, PrismaService } from 'src/shared';
 import { IResponse } from 'src/shared/types';
+import { isValidGenre } from 'src/utils';
 
 @Injectable()
 export class BooksService {
@@ -60,6 +62,12 @@ export class BooksService {
     }
   }
   async getFilteredBooks(params: FilterBooksDto): Promise<IResponse> {
+    if (!isValidGenre(params.genre)) {
+      return {
+        message: 'Invalid genre',
+        status: 400,
+      };
+    }
     try {
       const books = await this.data.book.findMany({
         where: {
