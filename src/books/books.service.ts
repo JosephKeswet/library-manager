@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BookDto, PrismaService } from 'src/shared';
+import { BookDto, FilterBooksDto, PrismaService } from 'src/shared';
 import { IResponse } from 'src/shared/types';
 
 @Injectable()
@@ -47,6 +47,33 @@ export class BooksService {
   async getAllBooks(): Promise<IResponse> {
     try {
       const books = await this.data.book.findMany();
+      return {
+        data: books,
+        message: 'Books fetched successfully',
+        status: 200,
+      };
+    } catch (err) {
+      return {
+        message: "Couldn't find books",
+        status: 400,
+      };
+    }
+  }
+  async getFilteredBooks(params: FilterBooksDto): Promise<IResponse> {
+    try {
+      const books = await this.data.book.findMany({
+        where: {
+          genre: params.genre,
+        },
+      });
+
+      if (books.length === 0) {
+        return {
+          message: 'No books found',
+          data: books,
+          status: 201,
+        };
+      }
       return {
         data: books,
         message: 'Books fetched successfully',

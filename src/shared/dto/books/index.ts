@@ -22,3 +22,9 @@ export class BookDto {
   @IsNumber()
   libraryId: number;
 }
+
+export class FilterBooksDto {
+  @IsNotEmpty()
+  @IsString()
+  genre: Genre;
+}
