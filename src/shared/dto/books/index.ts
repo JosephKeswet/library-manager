@@ -1,5 +1,5 @@
 import { Genre } from '@prisma/client';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class BookDto {
   @IsNotEmpty()
@@ -19,7 +19,7 @@ export class BookDto {
   userId: number;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   libraryId: number;
 }
 

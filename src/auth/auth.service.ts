@@ -3,14 +3,15 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/shared';
 import { SignInDto, SignUpDto } from 'src/shared/dto';
 import { IResponse } from 'src/shared/types';
-import { UsersService } from 'src/users/users.service';
 import * as argon2 from 'argon2';
+import { MailService } from 'src/utils';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private data: PrismaService,
+    private mailService: MailService,
   ) {}
   async signIn(signInDto: SignInDto): Promise<IResponse> {
     const user = await this.data.user.findUnique({
@@ -53,33 +54,50 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<IResponse> {
-    const password = await argon2.hash(signUpDto.password);
-    const username = signUpDto.username;
-    const email = signUpDto.email;
+    const { email, username, password } = signUpDto;
 
-    const existingUser = await this.data.user.findUnique({
+    // Check if email or username already exists
+    const existingUser = await this.data.user.findFirst({
       where: {
-        username,
-        email,
+        OR: [{ email }, { username }],
       },
     });
+
     if (existingUser) {
+      const conflictField = existingUser.email === email ? 'Email' : 'Username';
       return {
-        message: 'Username or email already exists',
+        message: `${conflictField} already exists`,
         status: 409,
       };
     }
+
+    // Hash the password
+    const hashedPassword = await argon2.hash(password);
+
+    // Create new user
     const { password: userPassword, ...user } = await this.data.user.create({
       data: {
         email,
         username,
-        password,
+        password: hashedPassword,
       },
     });
+
+    // this.mailService.sendMail({
+    //   message: `Welcome to the Library System, ${username}! Please verify your email address by clicking on the link below:
+    //   http://localhost:3000/verify-email/${user.id}`,
+    //   to: 'jhezekiah19@gmail.com',
+    //   subject: 'Library System - Verify Email',
+    // });
+
     return {
       data: user,
       message: 'User created successfully',
       status: 200,
     };
+  }
+
+  async verifyEmail(email: string): Promise<IResponse> {
+    return;
   }
 }

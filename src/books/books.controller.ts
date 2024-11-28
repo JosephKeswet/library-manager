@@ -11,10 +11,10 @@ import { Response } from 'express';
 import { AuthGuard, BookDto, FilterBooksDto } from 'src/shared';
 import { BooksService } from './books.service';
 
-@UseGuards(AuthGuard)
 @Controller('book')
 export class BooksController {
   constructor(private bookService: BooksService) {}
+  @UseGuards(AuthGuard)
   @Post('create')
   async createBook(@Body() bookDto: BookDto, @Res() res: Response) {
     const response = await this.bookService.createBook(bookDto);
@@ -24,7 +24,7 @@ export class BooksController {
 
   @Get('get')
   async getAllBooks(@Res() res: Response, @Query() params?: FilterBooksDto) {
-    if (params) {
+    if (Object.keys(params).length !== 0) {
       const response = await this.bookService.getFilteredBooks(params);
       return res.status(response.status).json(response);
     }

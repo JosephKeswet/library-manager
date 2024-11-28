@@ -9,13 +9,29 @@ export class BooksService {
   constructor(private data: PrismaService) {}
 
   async createBook(bookDto: BookDto): Promise<IResponse> {
-    // Check if any library exists
-    const libraryExists = await this.data.library.findFirst();
-    const bookExists = await this.data.book.findUnique({
+    const { userId, title, author, genre } = bookDto;
+
+    const userExists = await this.data.user.findUnique({
       where: {
-        title: bookDto.title,
+        id: userId,
       },
     });
+    if (!userExists) {
+      return {
+        message: 'User not found',
+        status: 404,
+      };
+    }
+    const bookIdentifier = `${userId}${title}`;
+
+    const [libraryExists, bookExists] = await Promise.all([
+      this.data.library.findFirst(),
+      this.data.book.findUnique({
+        where: {
+          bookIdentifier,
+        },
+      }),
+    ]);
     // If no library exists, create one (optional based on your logic)
     if (!libraryExists) {
       await this.data.library.create({
@@ -30,6 +46,13 @@ export class BooksService {
       };
     }
 
+    if (!isValidGenre(genre)) {
+      return {
+        message: 'Invalid genre',
+        status: 400,
+      };
+    }
+
     const book = await this.data.book.create({
       data: {
         title: bookDto.title,
@@ -37,6 +60,7 @@ export class BooksService {
         genre: bookDto.genre,
         userId: bookDto.userId,
         libraryId: libraryExists?.id,
+        bookIdentifier,
       },
     });
     return {
