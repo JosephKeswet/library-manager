@@ -4,14 +4,14 @@ import { PrismaService } from 'src/shared';
 import { SignInDto, SignUpDto } from 'src/shared/dto';
 import { IResponse } from 'src/shared/types';
 import * as argon2 from 'argon2';
-import { MailService } from 'src/utils';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private data: PrismaService,
-    private mailService: MailService,
+    private emailService: EmailService,
   ) {}
   async signIn(signInDto: SignInDto): Promise<IResponse> {
     const user = await this.data.user.findUnique({
@@ -83,12 +83,12 @@ export class AuthService {
       },
     });
 
-    // this.mailService.sendMail({
-    //   message: `Welcome to the Library System, ${username}! Please verify your email address by clicking on the link below:
-    //   http://localhost:3000/verify-email/${user.id}`,
-    //   to: 'jhezekiah19@gmail.com',
-    //   subject: 'Library System - Verify Email',
-    // });
+    this.emailService.sendEmail({
+      text: `Welcome to the Library System, ${username}! Please verify your email address by clicking on the link below:
+      http://localhost:3000/verify-email/${user.id}`,
+      to: 'jhezekiah19@gmail.com',
+      subject: 'Library System - Verify Email',
+    });
 
     return {
       data: user,
