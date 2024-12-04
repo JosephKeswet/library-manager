@@ -11,8 +11,8 @@ export class EmailService {
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: 'jhezekiah19@gmail.com',
-        pass: 'qcqqsdzdwzkyzjwr',
+        user: 'anenemaidohemmanuel@gmail.com',
+        pass: 'nleujfhoqiinaqmm',
       },
     });
   }
@@ -27,7 +27,7 @@ export class EmailService {
     text: string;
   }) {
     const mailOptions = {
-      from: 'jhezekiah19@gmail.com',
+      from: 'anenemaidohemmanuel@gmail.com',
       to,
       subject,
       text,

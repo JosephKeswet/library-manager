@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/shared';
-import { SignInDto, SignUpDto } from 'src/shared/dto';
+import { SignInDto, SignUpDto, verificationDto } from 'src/shared/dto';
 import { IResponse } from 'src/shared/types';
 import * as argon2 from 'argon2';
 import { EmailService } from 'src/email/email.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,12 @@ export class AuthService {
         status: 404,
       };
     }
-
+    if (user.isVerified === false) {
+      return {
+        message: 'Please verify your account',
+        status: 400,
+      };
+    }
     const correctPassword: boolean = await argon2.verify(
       user.password,
       signInDto.password,
@@ -38,11 +44,14 @@ export class AuthService {
         status: 400,
       };
     }
+
     const { password, ...result } = user;
+
     const jwtPayload = {
       id: user.id,
       email: user.email,
     };
+
     const token = await this.jwtService.sign(jwtPayload);
 
     return {
@@ -63,10 +72,13 @@ export class AuthService {
       },
     });
 
-    if (existingUser) {
-      const conflictField = existingUser.email === email ? 'Email' : 'Username';
+    if (
+      existingUser &&
+      existingUser.email === email &&
+      existingUser.username === username
+    ) {
       return {
-        message: `${conflictField} already exists`,
+        message: 'Email and Username already exists',
         status: 409,
       };
     }
@@ -74,19 +86,24 @@ export class AuthService {
     // Hash the password
     const hashedPassword = await argon2.hash(password);
 
+    // otp
+    const otp = crypto.randomBytes(40).toString('hex');
+    const hasedOtp = await argon2.hash(otp);
+
     // Create new user
     const { password: userPassword, ...user } = await this.data.user.create({
       data: {
         email,
         username,
         password: hashedPassword,
+        verificationOtp: hasedOtp,
       },
     });
 
-    this.emailService.sendEmail({
+    await this.emailService.sendEmail({
       text: `Welcome to the Library System, ${username}! Please verify your email address by clicking on the link below:
-      http://localhost:3000/verify-email/${user.id}`,
-      to: 'jhezekiah19@gmail.com',
+      http://localhost:3000/verify-email/${otp}`,
+      to: `${user.email}`,
       subject: 'Library System - Verify Email',
     });
 
@@ -97,7 +114,54 @@ export class AuthService {
     };
   }
 
-  async verifyEmail(email: string): Promise<IResponse> {
-    return;
+  async verifyOtp(verificationDto: verificationDto): Promise<IResponse> {
+    const { email, verificationOtp } = verificationDto;
+
+    // Check if email exists
+    const user = await this.data.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return {
+        message: 'No user with email please sign up!!!!!',
+        status: 409,
+      };
+    }
+
+    const isOtpVerified = await argon2.verify(
+      user.verificationOtp,
+      verificationOtp,
+    );
+
+    if (!isOtpVerified) {
+      return {
+        message: 'Invalid otp',
+        status: 403,
+      };
+    }
+
+    await this.data.user.update({
+      where: { email },
+      data: {
+        isVerified: true,
+        verificationOtp: '',
+      },
+    });
+
+    const jwtPayload = {
+      id: user.id,
+      email: user.email,
+    };
+
+    const token = await this.jwtService.sign(jwtPayload);
+
+    return {
+      message: 'User has been verified',
+      token,
+      status: 200,
+    };
   }
 }
