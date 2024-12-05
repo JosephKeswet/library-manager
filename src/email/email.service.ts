@@ -9,11 +9,17 @@ export class EmailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'Gmail',
+      // service: 'Gmail',
+      // auth: {
+      //   user: 'jhezekiah19@gmail.com',
+      //   pass: 'qcqqsdzdwzkyzjwr',
+      // },
       auth: {
-        user: 'jhezekiah19@gmail.com',
-        pass: 'qcqqsdzdwzkyzjwr',
+        user: '01b7c47ecdc7d9',
+        pass: '19f6dc58267985',
       },
+
+      host: 'sandbox.smtp.mailtrap.io',
     });
   }
 

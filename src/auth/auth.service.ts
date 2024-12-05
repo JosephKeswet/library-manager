@@ -75,26 +75,26 @@ export class AuthService {
     const hashedPassword = await argon2.hash(password);
 
     // Create new user
-    const { password: userPassword, ...user } = await this.data.user.create({
-      data: {
-        email,
-        username,
-        password: hashedPassword,
-      },
-    });
+    // const { password: userPassword, ...user } = await this.data.user.create({
+    //   data: {
+    //     email,
+    //     username,
+    //     password: hashedPassword,
+    //   },
+    // });
 
-    this.emailService.sendEmail({
+    await this.emailService.sendEmail({
       text: `Welcome to the Library System, ${username}! Please verify your email address by clicking on the link below:
-      http://localhost:3000/verify-email/${user.id}`,
+      http://localhost:3000/verify-email/`,
       to: 'jhezekiah19@gmail.com',
       subject: 'Library System - Verify Email',
     });
 
-    return {
-      data: user,
-      message: 'User created successfully',
-      status: 200,
-    };
+    // return {
+    //   data: user,
+    //   message: 'User created successfully',
+    //   status: 200,
+    // };
   }
 
   async verifyEmail(email: string): Promise<IResponse> {
