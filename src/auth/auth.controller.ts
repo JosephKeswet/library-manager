@@ -8,7 +8,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto, SignUpDto } from 'src/shared/dto';
+import { SignInDto, SignUpDto, verificationDto } from 'src/shared/dto';
 import { AuthGuard } from 'src/shared';
 import { Response } from 'express';
 import { IResponse } from 'src/shared/types';
@@ -27,6 +27,16 @@ export class AuthController {
   @Post('signup')
   async signUp(@Body() signUpDto: SignUpDto, @Res() res: Response) {
     const response: IResponse = await this.authService.signUp(signUpDto);
+    return res.status(response.status).json(response);
+  }
+
+  @Post('/verify-email')
+  async verifyOtp(
+    @Body() verificationDto: verificationDto,
+    @Res() res: Response,
+  ) {
+    const response: IResponse =
+      await this.authService.verifyOtp(verificationDto);
     return res.status(response.status).json(response);
   }
 

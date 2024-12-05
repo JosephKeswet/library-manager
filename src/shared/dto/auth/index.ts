@@ -42,3 +42,13 @@ export class SignInDto {
   //       'Password must contain at least one uppercase letter, one lowercase letter, a number and a special character',
   //   })
 }
+
+export class verificationDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  verificationOtp: string;
+}

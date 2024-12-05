@@ -10,6 +10,7 @@ import { BooksModule } from './books/books.module';
 import { PrismaService } from './shared';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailService } from './email/email.service';
+import { OtpServiceService } from './otp-service/otp-service.service';
 
 @Module({
   imports: [
@@ -32,6 +33,6 @@ import { EmailService } from './email/email.service';
     // }),
   ],
   controllers: [AppController, BooksController],
-  providers: [AppService, BooksService, PrismaService, EmailService],
+  providers: [AppService, BooksService, PrismaService, EmailService, OtpServiceService],
 })
 export class AppModule {}

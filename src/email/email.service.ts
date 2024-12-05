@@ -15,8 +15,8 @@ export class EmailService {
       //   pass: 'qcqqsdzdwzkyzjwr',
       // },
       auth: {
-        user: '01b7c47ecdc7d9',
-        pass: '19f6dc58267985',
+        user: 'anenemaidohemmanuel@gmail.com',
+        pass: 'nleujfhoqiinaqmm',
       },
 
       host: 'sandbox.smtp.mailtrap.io',
@@ -33,7 +33,7 @@ export class EmailService {
     text: string;
   }) {
     const mailOptions = {
-      from: 'jhezekiah19@gmail.com',
+      from: 'anenemaidohemmanuel@gmail.com',
       to,
       subject,
       text,
